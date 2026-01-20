@@ -1,12 +1,13 @@
 package com.library.inventory.service;
 
+import com.library.inventory.dto.ReservationRequest;
 import com.library.inventory.model.Book;
 import com.library.inventory.model.BookStatus;
 import com.library.inventory.repository.BookRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class BookService {
@@ -17,66 +18,50 @@ public class BookService {
         this.bookRepository = bookRepository;
     }
 
-    // Retrieve all books
     public List<Book> getAllBooks() {
         return bookRepository.findAll();
     }
 
-    // Retrieve book by id
-    public Optional<Book> getBookById(Long id) {
-        return bookRepository.findById(id);
+    public Book getBookById(Long id) {
+        return bookRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Book not found"));
     }
 
-    // Add new book
-    public Book addBook(String title, String author, String category, BookStatus status) {
-        Book book = new Book(title, author, category, status);
+    public Book createBook(Book book) {
+        if (book.getTitle() == null || book.getAuthor() == null) {
+            throw new IllegalArgumentException("Title and author are required");
+        }
+        book.setStatus(BookStatus.AVAILABLE);
         return bookRepository.save(book);
     }
 
-    // Update book details
-    public Book updateBook(Long id, String title, String author, String category, BookStatus status) {
-        Optional<Book> optionalBook = bookRepository.findById(id);
-        if (optionalBook.isPresent()) {
-            Book book = optionalBook.get();
-            book.setTitle(title);
-            book.setAuthor(author);
-            book.setCategory(category);
-            book.setStatus(status);
-            return bookRepository.save(book);
+    // STEP 4: Reserve a book
+    public Book reserveBook(Long bookId, ReservationRequest request) {
+
+        Book book = getBookById(bookId);
+
+        if (book.getStatus() != BookStatus.AVAILABLE) {
+            throw new IllegalStateException("Book is not available for reservation");
         }
-        return null;
-    }
 
-    // Delete a book
-    public void deleteBook(Long id) {
-        bookRepository.deleteById(id);
-    }
-
-    // Set book as reserved
-    public Book reserveBook(Long id, String reservedBy) {
-        Optional<Book> optionalBook = bookRepository.findById(id);
-        if (optionalBook.isPresent()) {
-            Book book = optionalBook.get();
-            book.setStatus(BookStatus.RESERVED);
-            book.setReservedBy(reservedBy);
-            return bookRepository.save(book);
+        if (request.getStartDate() == null || request.getEndDate() == null) {
+            throw new IllegalArgumentException("Reservation dates are required");
         }
-        return null;
-    }
 
-    // Set book as available
-    public Book makeBookAvailable(Long id) {
-        Optional<Book> optionalBook = bookRepository.findById(id);
-        if (optionalBook.isPresent()) {
-            Book book = optionalBook.get();
-            book.setStatus(BookStatus.AVAILABLE);
-            book.setReservedBy(null);
-            book.setReservationStart(null);
-            book.setReservationEnd(null);
-            return bookRepository.save(book);
+        if (request.getEndDate().isBefore(request.getStartDate())) {
+            throw new IllegalArgumentException("End date cannot be before start date");
         }
-        return null;
+
+        book.setStatus(BookStatus.RESERVED);
+        book.setReservedBy(request.getReader());
+        book.setReservationStart(request.getStartDate());
+        book.setReservationEnd(request.getEndDate());
+
+        return bookRepository.save(book);
     }
 
-    // Additional methods for overdue or lost books can be added here
+    // STEP 5: Admin view
+    public List<Book> getAllReservedBooks() {
+        return bookRepository.findByStatus(BookStatus.RESERVED);
+    }
 }
