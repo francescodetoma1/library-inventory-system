@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/books") // Base path for all book-related endpoints
+@RequestMapping("/books") // Updated base path for login redirect compatibility
 public class BookController {
 
     private final BookService bookService;
@@ -19,20 +19,26 @@ public class BookController {
         this.bookService = bookService;
     }
 
-    // GET all books
+    // --- Test endpoint for login redirect ---
+    @GetMapping("/test")
+    public String testBooks() {
+        return "Books endpoint is working!";
+    }
+
+    // --- GET all books ---
     @GetMapping
     public ResponseEntity<List<Book>> getAllBooks() {
         return ResponseEntity.ok(bookService.getAllBooks());
     }
 
-    // POST create a new book
+    // --- POST create a new book ---
     @PostMapping
     public ResponseEntity<Book> createBook(@RequestBody Book book) {
         Book created = bookService.createBook(book);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
-    // STEP 4: Reader reserves a book
+    // --- Reader reserves a book ---
     @PostMapping("/{id}/reserve")
     public ResponseEntity<Book> reserveBook(
             @PathVariable Long id,
@@ -42,12 +48,13 @@ public class BookController {
         return ResponseEntity.ok(reserved);
     }
 
-    // STEP 5: Admin view of reservations
+    // --- Admin view of reservations ---
     @GetMapping("/admin/reservations")
     public ResponseEntity<List<Book>> getReservedBooks() {
         return ResponseEntity.ok(bookService.getAllReservedBooks());
     }
 }
+
 
 
 
