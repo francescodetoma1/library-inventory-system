@@ -1,16 +1,14 @@
 package com.library.inventory.controller;
 
-import com.library.inventory.dto.ReservationRequest;
-import com.library.inventory.model.Book;
+import com.library.inventory.dto.BookDTO;
 import com.library.inventory.service.BookService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/books") // Updated base path for login redirect compatibility
+@RequestMapping("/api/books")
 public class BookController {
 
     private final BookService bookService;
@@ -19,42 +17,32 @@ public class BookController {
         this.bookService = bookService;
     }
 
-    // --- Test endpoint for login redirect ---
-    @GetMapping("/test")
-    public String testBooks() {
-        return "Books endpoint is working!";
-    }
-
-    // --- GET all books ---
     @GetMapping
-    public ResponseEntity<List<Book>> getAllBooks() {
+    public ResponseEntity<List<BookDTO>> getAllBooks() {
         return ResponseEntity.ok(bookService.getAllBooks());
     }
 
-    // --- POST create a new book ---
+    @GetMapping("/{id}")
+    public ResponseEntity<BookDTO> getBookById(@PathVariable Long id) {
+        return ResponseEntity.ok(bookService.getBookById(id));
+    }
+
     @PostMapping
-    public ResponseEntity<Book> createBook(@RequestBody Book book) {
-        Book created = bookService.createBook(book);
-        return new ResponseEntity<>(created, HttpStatus.CREATED);
+    public ResponseEntity<BookDTO> createBook(@RequestBody BookDTO dto) {
+        return ResponseEntity.ok(bookService.createBook(dto));
     }
 
-    // --- Reader reserves a book ---
-    @PostMapping("/{id}/reserve")
-    public ResponseEntity<Book> reserveBook(
-            @PathVariable Long id,
-            @RequestBody ReservationRequest request) {
-
-        Book reserved = bookService.reserveBook(id, request);
-        return ResponseEntity.ok(reserved);
+    @PutMapping("/{id}")
+    public ResponseEntity<BookDTO> updateBook(@PathVariable Long id,
+                                              @RequestBody BookDTO dto) {
+        return ResponseEntity.ok(bookService.updateBook(id, dto));
     }
 
-    // --- Admin view of reservations ---
-    @GetMapping("/admin/reservations")
-    public ResponseEntity<List<Book>> getReservedBooks() {
-        return ResponseEntity.ok(bookService.getAllReservedBooks());
+    @PatchMapping("/{id}/reserve")
+    public ResponseEntity<BookDTO> reserveBook(@PathVariable Long id) {
+        return ResponseEntity.ok(bookService.reserveBook(id));
     }
 }
-
 
 
 
