@@ -17,17 +17,16 @@ public class ViewController {
         this.userService = userService;
     }
 
-    // BOOK PAGE
+    // BOOK PAGE - Shows the list of available books
     @GetMapping("/books")
     public String showBooks(Model model) {
         model.addAttribute("books", bookService.getAllBooks());
-        return "books";
+        return "books"; // This points to templates/books.html
     }
 
-    // REGISTER PAGE
-    @GetMapping("/register")
-    public String showRegister() {
-        return "register";
+    @GetMapping("/login")
+    public String showLogin() {
+        return "login";
     }
 
 }

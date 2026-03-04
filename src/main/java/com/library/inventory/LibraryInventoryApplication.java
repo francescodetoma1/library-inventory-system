@@ -15,34 +15,30 @@ public class LibraryInventoryApplication {
         SpringApplication.run(LibraryInventoryApplication.class, args);
     }
 
-
     @Bean
     CommandLineRunner initUsers(UserRepository userRepository) {
         return args -> {
             BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-
             if (userRepository.findByUsername("admin").isEmpty()) {
                 User admin = new User(
                         "admin",
                         passwordEncoder.encode("admin123"),
-                        "ADMIN"
+                        "ROLE_ADMIN"
                 );
                 userRepository.save(admin);
             }
-
 
             if (userRepository.findByUsername("reader").isEmpty()) {
                 User reader = new User(
                         "reader",
                         passwordEncoder.encode("reader123"),
-                        "READER"
+                        "ROLE_READER"
                 );
                 userRepository.save(reader);
             }
         };
     }
 }
-
 
 
