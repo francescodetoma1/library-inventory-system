@@ -64,9 +64,27 @@ public class BookService {
 
     public BookDTO reserveBook(Long id, String username, LocalDate startDate, LocalDate endDate) {
         Book book = findBookOrThrow(id);
+
+        // Check if the book is available
         if (book.getStatus() != BookStatus.AVAILABLE) {
             throw new RuntimeException("Book not available");
         }
+
+        // Check if start date is in the past
+        if (startDate.isBefore(LocalDate.now())) {
+            throw new RuntimeException("Start date cannot be in the past");
+        }
+
+        // Check if end date is before start date
+        if (endDate.isBefore(startDate)) {
+            throw new RuntimeException("End date cannot be before start date");
+        }
+
+        // Check if end date is the same as start date
+        if (endDate.isEqual(startDate)) {
+            throw new RuntimeException("End date must be after start date");
+        }
+
         book.setStatus(BookStatus.RESERVED);
         book.setReservedBy(username);
         book.setReservationStart(startDate);

@@ -50,11 +50,15 @@ public class BookController {
     }
 
     @PatchMapping("/{id}/reserve")
-    public ResponseEntity<BookDTO> reserveBook(@PathVariable Long id,
-                                               @RequestBody ReservationRequest request,
-                                               Authentication authentication) {
-        String username = authentication.getName();
-        return ResponseEntity.ok(bookService.reserveBook(id, username, request.getStartDate(), request.getEndDate()));
+    public ResponseEntity<?> reserveBook(@PathVariable Long id,
+                                         @RequestBody ReservationRequest request,
+                                         Authentication authentication) {
+        try {
+            String username = authentication.getName();
+            return ResponseEntity.ok(bookService.reserveBook(id, username, request.getStartDate(), request.getEndDate()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PatchMapping("/{id}/cancel")
